@@ -1,69 +1,61 @@
 #include <iostream>
+#include <vector>
 #include <queue> 
-#include <algorithm> 
 using namespace std;
-
-int People[1010],endTime[1010];//排队者,结束时间
-queue<int> Que[20]; 
-
+struct node{
+	int poptime,endtime;
+	queue<int> q;
+};
 int main()
 {
-	int N,M,K,Q;//窗口数，队列容量,排队者人数，要求解的人 
-	scanf("%d%d%d%d",&N,&M,&K,&Q);
-	for(int i=1;i<=K;i++){
-		scanf("%d",&People[i]);
-	}
-	int order=1;
-	for(int i=0;i<M;i++){
-		for(int j=0;j<M;j++){
-			Que[j].push(order);
-			order++;
-			if(order>K){
-				order=-1;
+	int n,m,k,q,index=1;
+	scanf("%d%d%d%d",&n,&m,&k,&q);
+	vector<int> time(k+1),result(k+1);
+	vector<bool> sorry(k+1,false);
+	for(int i=1;i<=k;i++){
+		scanf("%d",&time[i]);
+	} 
+	vector<node> vn(n+1);
+	for(int i=1;i<=m;i++){
+		for(int j=1;j<=n;j++){
+			if(index<=k){
+				vn[j].q.push(time[index]);
+				if(vn[j].endtime>=540)
+					sorry[index]=true;
+				vn[j].endtime+=time[index];
+				if(i==1)
+					vn[j].poptime=vn[j].endtime;
+				result[index]=vn[j].endtime;
+				index++;
 			}
 		}
-		if(order==-1)break;
 	}
-	int flag=1;//结束标记 
-	fill(endTime,endTime+K+1,1000);
-	for(int i=1;i<=540;i++){
-		for(int j=0;j<N;j++){
-			if(!Que[j].empty()){
-				int first=Que[j].front();
-				People[first]--;
-				if(People[first]==0){
-					endTime[first]=i;
-					Que[j].pop();
-					if(flag){
-						Que[j].push(order);
-						order++;
-					}
-					if(order>K){
-						flag=0;
-					}
-				}
+	while(index<=k){
+		int tmptime=vn[1].poptime,idx=1;
+		for(int i=2;i<=n;i++){
+			if(vn[i].poptime<tmptime){
+				tmptime=vn[i].poptime;
+				idx=i;
 			}
-			
 		}
+		vn[idx].q.pop();
+		vn[idx].q.push(time[index]);
+		vn[idx].poptime+=vn[idx].q.front();
+		if(vn[idx].endtime>=540)
+			sorry[index]=true;
+		vn[idx].endtime+=time[index];
+		result[index]=vn[idx].endtime;
+		index++;
 	}
-	for(int i=0;i<N;i++){
-		if(!Que[i].empty()){
-			
-		}
-	}
-	for(int i=0;i<Q;i++){
-		int q;
-		scanf("%d",&q);
-		int t=endTime[q];
-		if(t<=540){
-			int h,m;
-			m=t%60;
-			h=t/60;
-			printf("%02d:%02d\n",h+8,m);
+	while(q--){
+		int tmp;
+		scanf("%d",&tmp);
+		if(sorry[tmp]){
+			printf("Sorry\n");
 		}else{
-			printf("Sorry");
+			int t=result[tmp];
+			printf("%02d:%02d\n",(480+t)/60,(480+t)%60);
 		}
-		
 	}
 	return 0;
-}
+} 
